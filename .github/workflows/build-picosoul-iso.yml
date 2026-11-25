@@ -28,13 +28,18 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             live-build debootstrap squashfs-tools xorriso \
-            isolinux syslinux-common rsync
+            isolinux syslinux-common rsync dpkg-dev
 
       - name: Build ISO
         run: |
+          # Windows sync can leave CRLF; live-build hooks must be LF
+          find scripts/distro distro/live-build -type f \
+            \( -name '*.sh' -o -name 'config' -o -name '*.hook.*' \) \
+            -exec sed -i 's/\r$//' {} +
           chmod +x scripts/distro/build_iso.sh distro/live-build/auto/config
           find distro/live-build/config/hooks -type f -exec chmod +x {} \;
-          ./scripts/distro/build_iso.sh
+          # Preserve LB_CACHE etc. under sudo
+          sudo -E ./scripts/distro/build_iso.sh
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
