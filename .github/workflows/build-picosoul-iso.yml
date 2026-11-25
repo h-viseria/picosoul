@@ -62,10 +62,20 @@ jobs:
 
       - name: Build ISO
         run: |
-          # Windows sync can leave CRLF; live-build hooks must be LF
-          find scripts/distro distro/live-build -type f \
-            \( -name '*.sh' -o -name 'config' -o -name '*.hook.*' \) \
-            -exec sed -i 's/\r$//' {} +
+          # Windows sync can leave CRLF. Package lists with \r make apt
+          # look up "live-boot\r" → Unable to locate package.
+          find scripts/distro distro/live-build -type f \( \
+              -name '*.sh' -o -name 'config' -o -name '*.hook.*' \
+              -o -name '*.list*' -o -name '*.chroot' -o -name 'README' \
+              -o -name '*.conf' -o -name '*.toml' -o -name '*.txt' \
+            \) -exec sed -i 's/\r$//' {} +
+          # Prove package list is LF before build
+          if grep -q $'\r' distro/live-build/config/package-lists/*.list* 2>/dev/null; then
+            echo "ERROR: CRLF still present in package-lists after strip"
+            od -c distro/live-build/config/package-lists/picosoul.list.chroot | head
+            exit 1
+          fi
+          echo "package-lists LF check OK"
           chmod +x scripts/distro/build_iso.sh distro/live-build/auto/config
           find distro/live-build/config/hooks -type f -exec chmod +x {} \;
           # Run as root (sudo -E is ignored on these runners)
