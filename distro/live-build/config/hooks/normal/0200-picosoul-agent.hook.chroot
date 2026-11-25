@@ -1,0 +1,46 @@
+#!/bin/sh
+set -e
+# Install OS Agent sources into the live image.
+# The build script copies the repo's src/ + config/ into /build/picosoul-agent before lb build.
+
+AGENT_SRC="/build/picosoul-agent"
+DEST="/opt/picosoul"
+
+mkdir -p "$DEST"
+if [ -d "$AGENT_SRC/src" ]; then
+  cp -a "$AGENT_SRC/src" "$DEST/"
+  cp -a "$AGENT_SRC/config" "$DEST/" 2>/dev/null || true
+  if [ -f "$AGENT_SRC/requirements.txt" ]; then
+    cp "$AGENT_SRC/requirements.txt" "$DEST/"
+  fi
+  python3 -m venv "$DEST/venv"
+  "$DEST/venv/bin/pip" install --upgrade pip
+  if [ -f "$DEST/requirements.txt" ]; then
+    "$DEST/venv/bin/pip" install -r "$DEST/requirements.txt"
+  fi
+fi
+
+mkdir -p /usr/local/bin
+cat >/usr/local/bin/picosoul-agent <<'EOF'
+#!/bin/sh
+export PYTHONPATH=/opt/picosoul/src${PYTHONPATH:+:$PYTHONPATH}
+export PICOSOUL_ROOT=/opt/picosoul
+# Models / learned state → persistence-friendly locations when present
+export OSAGENT_MODELS_DIR="${OSAGENT_MODELS_DIR:-/var/lib/picosoul/models}"
+mkdir -p "$OSAGENT_MODELS_DIR" 2>/dev/null || true
+exec /opt/picosoul/venv/bin/python -m osagent "$@"
+EOF
+chmod +x /usr/local/bin/picosoul-agent
+
+# Desktop entry — primary “Ask PicoSoul” launcher
+mkdir -p /usr/share/applications /etc/skel/Desktop
+cat >/usr/share/applications/picosoul-agent.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=PicoSoul Agent
+Comment=Local AI desktop assistant
+Exec=xterm -T PicoSoul -e picosoul-agent
+Terminal=false
+Categories=System;Utility;
+EOF
+cp /usr/share/applications/picosoul-agent.desktop /etc/skel/Desktop/ 2>/dev/null || true
