@@ -1,0 +1,83 @@
+# OS Agent configuration
+# Copy to config.local.toml for machine-specific overrides (gitignored).
+
+[llm]
+# "local"     = llama.cpp server (bundled under external/)
+# "api"       = OpenAI-compatible HTTP API
+# "anthropic" = Anthropic Claude cloud (Sonnet / Opus)
+provider = "local"
+# Max tokens for a single completion (local provider caps at 1024)
+max_tokens = 1024
+temperature = 0.2
+
+[llm.local]
+# Display name shown during first-run download prompt
+model_name = "Qwen3.5-4B (Q4_K_M)"
+# GGUF path relative to project / release root, or absolute
+model_path = "models/Qwen3.5-4B-Q4_K_M.gguf"
+# If the GGUF is missing on startup, prompt to download (exe / interactive)
+download_on_missing = true
+# Official Unsloth Q4_K_M quant (~2.7 GB) — Apache-2.0 base (Qwen)
+download_url = "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf"
+# llama-server binary is resolved from external/llama.cpp after build
+host = "127.0.0.1"
+port = 8080
+# Extra args passed to llama-server (space-separated string)
+# Use >=8192 context — the tool catalog makes a large system prompt
+extra_args = "-c 8192 -ngl 0"
+# OpenAI-compatible chat path on llama-server
+api_path = "/v1/chat/completions"
+# false = text TOOL protocol (avoids llama.cpp 400s with many tools)
+# true  = OpenAI native tools= (needs good template + enough context)
+native_tools = false
+
+[llm.api]
+# Any OpenAI-compatible endpoint (OpenAI, Azure proxy, local gateway, etc.)
+base_url = "https://api.openai.com/v1"
+model = "gpt-4o-mini"
+# Read key from this environment variable (do not put secrets in this file)
+api_key_env = "OPENAI_API_KEY"
+# Optional hard-coded key for local testing only — prefer api_key_env
+api_key = ""
+
+[llm.anthropic]
+# Anthropic Messages API — https://docs.anthropic.com
+base_url = "https://api.anthropic.com"
+# Try Sonnet first; for Opus set e.g. model = "claude-opus-4-1"
+# Exact IDs: https://docs.anthropic.com/en/docs/about-claude/models
+model = "claude-sonnet-4-5"
+api_key_env = "ANTHROPIC_API_KEY"
+# Optional hard-coded key for local testing only — prefer api_key_env
+api_key = ""
+api_version = "2023-06-01"
+
+[agent]
+# Require confirmation before destructive tools (delete, shutdown, etc.)
+confirm_destructive = true
+# Platform catalog: "auto" | "windows" | "linux"
+platform = "auto"
+# Interactive CLI loop after startup
+interactive = true
+# Rephrase tool results with a second LLM call (slower). Leave false for instant replies.
+narrate_tools = false
+# Build/refresh app+device inventory on startup (background). Stored in config/inventory.json
+inventory_on_startup = true
+# When LLM resolves an unmatched phrase via a safe tool, remember it for next time
+# (config/learned_intents.json). Built-in intents always win over learned ones.
+learn_intents = true
+
+[voice]
+# Speech-to-text (Vosk). Type "start audio" / "stop audio" in the CLI.
+# Needs: pip install -r requirements-voice.txt
+enabled = true
+# Relative to config/ (or project root). Auto-downloaded on first "start audio".
+model_path = "models/vosk-model-small-en-us-0.15"
+model_url = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
+sample_rate = 16000
+# Optional mic device index (omit / leave unset for system default)
+# device = 0
+
+[paths]
+# Overridden at runtime when frozen; defaults are project-relative
+external_dir = "external"
+config_dir = "config"
