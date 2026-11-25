@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+# Single user, no greeter: autologin graphical session as picosoul.
+# live-config creates the user from boot params; reinforce autologin here.
+
+mkdir -p /etc/systemd/system/car@picosoul.service.d 2>/dev/null || true
+
+# Slim getty autologin on tty1 (fallback if no display manager)
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+cat >/etc/systemd/system/getty@tty1.service.d/autologin.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin picosoul --noclear %I $TERM
+EOF
+
+# Start IceWM for the live user when logging in on tty1
+PROFILE=/etc/skel/.profile
+if [ -f /etc/skel/.bash_profile ]; then
+  PROFILE=/etc/skel/.bash_profile
+fi
+if ! grep -q 'startx' /etc/skel/.profile 2>/dev/null; then
+  cat >>/etc/skel/.profile <<'EOF'
+
+# PicoSoul: start minimal GUI on first console login
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+  exec startx /usr/bin/icewm-session
+fi
+EOF
+fi
+
+# sudo without password for admin-mode package installs (still one user)
+echo 'picosoul ALL=(ALL) NOPASSWD:ALL' >/etc/sudoers.d/picosoul
+chmod 440 /etc/sudoers.d/picosoul
