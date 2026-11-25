@@ -1,0 +1,7 @@
+PicoSoul live system
+===================
+Autologin user: picosoul
+Agent:          picosoul-agent  (/opt/picosoul)
+Models:         /var/lib/picosoul/models  (use USB persistence)
+Config overlay: /var/lib/picosoul/config.local.toml
+Admin mode:     same user + sudo (no separate login)
