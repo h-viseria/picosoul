@@ -27,8 +27,21 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            live-build debootstrap squashfs-tools xorriso \
-            isolinux syslinux-common rsync dpkg-dev
+            debootstrap squashfs-tools xorriso \
+            isolinux syslinux-common rsync dpkg-dev \
+            apt-utils wget ca-certificates cpio gzip tar
+          # Ubuntu's live-build still uses obsolete "bookworm/updates" security
+          # paths. Install Debian live-build (all.deb) so Bookworm uses
+          # security.debian.org/debian-security + bookworm-security.
+          sudo apt-get remove -y live-build || true
+          LB_VER="$(wget -qO- https://deb.debian.org/debian/pool/main/l/live-build/ \
+            | grep -oE 'live-build_[0-9][^\"<> ]+_all\.deb' \
+            | sort -u | tail -1)"
+          echo "Using Debian package: ${LB_VER}"
+          wget -q "https://deb.debian.org/debian/pool/main/l/live-build/${LB_VER}" \
+            -O "/tmp/${LB_VER}"
+          sudo dpkg -i "/tmp/${LB_VER}" || sudo apt-get install -fy
+          lb --version || true
 
       - name: Build ISO
         run: |
