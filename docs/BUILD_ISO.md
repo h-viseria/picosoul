@@ -13,7 +13,7 @@
 ```bash
 sudo apt-get update
 sudo apt-get install -y debootstrap squashfs-tools xorriso \
-  isolinux syslinux-common rsync dpkg-dev
+  isolinux syslinux-common rsync dpkg-dev debian-archive-keyring
 # Prefer Debian's live-build (not Ubuntu's) for Bookworm security mirrors:
 LB_VER=$(wget -qO- https://deb.debian.org/debian/pool/main/l/live-build/ \
   | grep -oE 'live-build_[0-9][^\"<> ]+_all\.deb' | sort -u | tail -1)
