@@ -28,6 +28,10 @@ On **Windows**, run the script from **WSL Ubuntu**, not PowerShell.
   (`security.debian.org bookworm/updates`). Always use Debian’s package in CI/local.
 - Keep `--apt-indices true` during the build. With `false`, live-build may fetch
   only `Sources` and then fail with `Unable to locate package` for everything.
+- Package lists and hooks must be **LF** (not Windows CRLF). A trailing `\r` on
+  each package name makes apt look up `live-boot\r` and report
+  `Unable to locate package`. CI/`build_iso.sh` strip CRLF; `.gitattributes`
+  keeps `distro/**` as LF.
 
 ## Local build
 
