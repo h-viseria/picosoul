@@ -1,0 +1,62 @@
+# Human-readable index of the Windows command catalog.
+# Source of truth for scripts: src/osagent/tools/catalog/windows_commands.py
+# Add new everyday actions there; keep this index in sync for review.
+#
+# Gap fallback (not listed below): windows.powershell.run
+# — model proposes a PowerShell command when no catalog entry fits.
+
+[[tool]]
+id = "files.find_recent"
+intent = "latest / recently updated / recently edited files"
+
+[[tool]]
+id = "files.find_by_name"
+intent = "find file by name or wildcard"
+
+[[tool]]
+id = "files.find_largest"
+intent = "biggest files on disk"
+
+[[tool]]
+id = "files.disk_free"
+intent = "free disk space"
+
+[[tool]]
+id = "windows.wifi.list"
+intent = "list Wi-Fi profiles / connection"
+
+[[tool]]
+id = "windows.wifi.status"
+intent = "current Wi-Fi status"
+
+[[tool]]
+id = "windows.network.ipconfig"
+intent = "IP configuration"
+
+[[tool]]
+id = "windows.processes.top"
+intent = "top CPU/memory processes"
+
+[[tool]]
+id = "windows.processes.find"
+intent = "find process by name"
+
+[[tool]]
+id = "windows.battery.status"
+intent = "battery percent"
+
+[[tool]]
+id = "windows.system.uptime"
+intent = "uptime / last boot"
+
+[[tool]]
+id = "windows.clipboard.get_text"
+intent = "read clipboard text"
+
+[[tool]]
+id = "windows.services.list_running"
+intent = "running services"
+
+[[tool]]
+id = "windows.env.list_user"
+intent = "user environment variables"
