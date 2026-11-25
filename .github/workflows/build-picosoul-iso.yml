@@ -1,0 +1,58 @@
+# Build PicoSoul live ISO and publish to GitHub Releases.
+# Repo: https://github.com/h-viseria/picosoul
+#
+# Does NOT run on every push (ISO builds are heavy).
+# Run manually: Actions → "Build PicoSoul ISO" → Run workflow
+# Or push a tag: git tag iso-0.1.0 && git push origin iso-0.1.0
+name: Build PicoSoul ISO
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "iso-*"
+
+permissions:
+  contents: write
+
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install live-build deps
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            live-build debootstrap squashfs-tools xorriso \
+            isolinux syslinux-common rsync
+
+      - name: Build ISO
+        run: |
+          chmod +x scripts/distro/build_iso.sh distro/live-build/auto/config
+          find distro/live-build/config/hooks -type f -exec chmod +x {} \;
+          ./scripts/distro/build_iso.sh
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: picosoul-iso
+          path: |
+            out/iso/*.iso
+            out/iso/*.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Create GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/iso/*.iso
+            out/iso/*.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
