@@ -113,10 +113,22 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   exit 0
 fi
 
+# debootstrap needs Debian archive keys (Ubuntu hosts often lack them)
+KEYRING="/usr/share/keyrings/debian-archive-keyring.gpg"
+if [[ ! -f "$KEYRING" ]]; then
+  if [[ -f /usr/share/keyrings/debian-archive-keyring.pgp ]]; then
+    KEYRING=/usr/share/keyrings/debian-archive-keyring.pgp
+  else
+    log "ERROR: missing $KEYRING"
+    log "Install: sudo apt-get install -y debian-archive-keyring"
+    exit 1
+  fi
+fi
+
 log "running live-build (this takes a while)…"
 cd "$WORK"
 
-# Point lb cache at out/cache (sudo -E preserves this)
+# Point lb cache at out/cache
 export LB_CACHE="$CACHE"
 mkdir -p "$CACHE"
 
