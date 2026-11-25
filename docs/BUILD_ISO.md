@@ -66,9 +66,22 @@ Workflow: `.github/workflows/build-picosoul-iso.yml`
 
 - Trigger: `workflow_dispatch` or push tag `iso-*`
 - Runs `scripts/distro/build_iso.sh` on `ubuntu-latest`
-- Uploads the ISO to a **GitHub Release**
+- Uploads a short-lived **Actions artifact** (`picosoul-iso`)
+- Always publishes/updates Release tag **`iso-latest`** with stable names:
+  - `picosoul-amd64.iso`
+  - `picosoul-amd64.iso.sha256`
+- Tag pushes `iso-*` also create a **versioned** Release
 
 Repo: https://github.com/h-viseria/picosoul
+
+**Stable download (for opensource page):**
+
+```text
+https://github.com/h-viseria/picosoul/releases/latest/download/picosoul-amd64.iso
+https://github.com/h-viseria/picosoul/releases/latest/download/picosoul-amd64.iso.sha256
+```
+
+Paste that into `opensource/picosoul/index.html` (e.g. the Alpha CTA). Re-running the ISO workflow refreshes the same URLs.
 
 ## USB (Rufus)
 
