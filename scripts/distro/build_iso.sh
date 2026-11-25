@@ -97,9 +97,13 @@ if [[ -f "$ROOT/requirements-voice.txt" ]]; then
   cp "$ROOT/requirements-voice.txt" "$STAGE/" || true
 fi
 
-# Strip CRLF (Windows sync) and make hooks executable
-find "$WORK" -type f \( -name 'config' -o -name '*.hook.*' -o -name '*.sh' \) \
-  -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+# Strip CRLF (Windows sync). Package lists MUST be LF — apt treats
+# "live-boot\r" as a different name and reports Unable to locate package.
+find "$WORK" -type f \( \
+    -name 'config' -o -name '*.hook.*' -o -name '*.sh' \
+    -o -name '*.list*' -o -name '*.chroot' -o -name 'README' \
+    -o -name '*.conf' -o -name '*.toml' -o -name '*.txt' \
+  \) -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 find "$WORK/config/hooks" -type f -name '*.hook.*' -exec chmod +x {} \; 2>/dev/null || true
 chmod +x "$WORK/auto/config" 2>/dev/null || true
 
