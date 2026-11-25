@@ -23,8 +23,11 @@ sudo dpkg -i /tmp/"$LB_VER" || sudo apt-get install -fy
 
 On **Windows**, run the script from **WSL Ubuntu**, not PowerShell.
 
-**Note:** Ubuntu’s `live-build` generates invalid Bookworm security lines  
-(`security.debian.org bookworm/updates`). Always use Debian’s package in CI/local.
+**Notes:**
+- Ubuntu’s `live-build` generates invalid Bookworm security lines  
+  (`security.debian.org bookworm/updates`). Always use Debian’s package in CI/local.
+- Keep `--apt-indices true` during the build. With `false`, live-build may fetch
+  only `Sources` and then fail with `Unable to locate package` for everything.
 
 ## Local build
 
