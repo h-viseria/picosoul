@@ -91,11 +91,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      # Stable download URL for opensource page / docs:
-      #   https://github.com/h-viseria/picosoul/releases/latest/download/picosoul-amd64.iso
-      - name: Publish iso-latest Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Stable URL: .../releases/latest/download/picosoul-amd64.iso
+      - name: Stage stable ISO names
         run: |
           set -euo pipefail
           ISO="$(ls out/iso/picosoul-*-amd64.iso | head -1)"
@@ -103,46 +100,50 @@ jobs:
           HASH="$(sha256sum "$ISO" | awk '{print $1}')"
           cp -f "$ISO" out/iso/picosoul-amd64.iso
           printf '%s  picosoul-amd64.iso\n' "$HASH" > out/iso/picosoul-amd64.iso.sha256
-          NOTES="PicoSoul live ISO (Debian Bookworm hybrid).
+          {
+            echo "PicoSoul live ISO (Debian Bookworm hybrid)."
+            echo
+            echo "Built: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Source file: $(basename "$ISO")"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "Stable assets (replaced each build):"
+            echo "* picosoul-amd64.iso"
+            echo "* picosoul-amd64.iso.sha256"
+          } > out/iso/RELEASE_NOTES.md
 
-Built: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-Source file: $(basename "$ISO")
-Commit: ${GITHUB_SHA}
-Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
-
-Stable assets (overwrite each build):
-- picosoul-amd64.iso
-- picosoul-amd64.iso.sha256
-
-Link from https://github.com/h-viseria/opensource/tree/main/picosoul"
-          TAG=iso-latest
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" \
-              out/iso/picosoul-amd64.iso \
-              out/iso/picosoul-amd64.iso.sha256 \
-              --clobber
-            gh release edit "$TAG" \
-              --title "PicoSoul ISO (latest)" \
-              --notes "$NOTES" \
-              --latest
-          else
-            gh release create "$TAG" \
-              out/iso/picosoul-amd64.iso \
-              out/iso/picosoul-amd64.iso.sha256 \
-              --title "PicoSoul ISO (latest)" \
-              --notes "$NOTES" \
-              --latest
+      - name: Replace previous iso-latest assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view iso-latest >/dev/null 2>&1; then
+            gh release delete-asset iso-latest picosoul-amd64.iso --yes || true
+            gh release delete-asset iso-latest picosoul-amd64.iso.sha256 --yes || true
           fi
-          echo "Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
-          echo "ISO:     ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/latest/download/picosoul-amd64.iso"
+
+      - name: Publish iso-latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: iso-latest
+          name: PicoSoul ISO (latest)
+          body_path: out/iso/RELEASE_NOTES.md
+          files: |
+            out/iso/picosoul-amd64.iso
+            out/iso/picosoul-amd64.iso.sha256
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create versioned GitHub Release (iso-* tags only)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            out/iso/*.iso
-            out/iso/*.sha256
+            out/iso/picosoul-*-amd64.iso
+            out/iso/picosoul-*-amd64.iso.sha256
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
