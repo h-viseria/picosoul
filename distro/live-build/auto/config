@@ -34,4 +34,5 @@ lb config noauto \
   --firmware-binary false \
   --firmware-chroot false \
   --cache true \
+  --debootstrap-options "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg" \
   "${@}"
