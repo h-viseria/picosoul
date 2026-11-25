@@ -1,0 +1,10 @@
+# Live-build / shell must stay LF. Windows CRLF in package lists makes apt
+# look up "live-boot\r" and fail with Unable to locate package.
+*.sh            text eol=lf
+*.hook.*        text eol=lf
+**/auto/config  text eol=lf
+*.list.chroot   text eol=lf
+*.list.binary   text eol=lf
+*.list          text eol=lf
+distro/**       text eol=lf
+.github/**/*.yml text eol=lf
