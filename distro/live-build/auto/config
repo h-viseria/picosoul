@@ -2,11 +2,15 @@
 # live-build auto/config — PicoSoul Bookworm live (no installer).
 set -e
 
-# Mirrors / suites
+# Bookworm: firmware lives in non-free-firmware; keep non-free too so
+# live-build's firmware helpers / metas still resolve (avoids apt exit 100).
+# Firmware packages are also listed explicitly in package-lists; disable
+# live-build's auto firmware pull to avoid duplicate/broken metas.
 lb config noauto \
   --mode debian \
   --distribution bookworm \
-  --archive-areas "main contrib non-free-firmware" \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --parent-archive-areas "main contrib non-free non-free-firmware" \
   --binary-images iso-hybrid \
   --debian-installer none \
   --bootappend-live "boot=live components quiet splash username=picosoul hostname=picosoul persistence" \
@@ -18,7 +22,7 @@ lb config noauto \
   --win32-loader false \
   --apt-indices false \
   --apt-recommends false \
-  --firmware-binary true \
-  --firmware-chroot true \
+  --firmware-binary false \
+  --firmware-chroot false \
   --cache true \
   "${@}"
