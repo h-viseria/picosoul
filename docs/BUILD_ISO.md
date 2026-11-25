@@ -12,11 +12,19 @@
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y live-build debootstrap squashfs-tools xorriso \
-  isolinux syslinux-common rsync
+sudo apt-get install -y debootstrap squashfs-tools xorriso \
+  isolinux syslinux-common rsync dpkg-dev
+# Prefer Debian's live-build (not Ubuntu's) for Bookworm security mirrors:
+LB_VER=$(wget -qO- https://deb.debian.org/debian/pool/main/l/live-build/ \
+  | grep -oE 'live-build_[0-9][^\"<> ]+_all\.deb' | sort -u | tail -1)
+wget -q "https://deb.debian.org/debian/pool/main/l/live-build/${LB_VER}" -O /tmp/"$LB_VER"
+sudo dpkg -i /tmp/"$LB_VER" || sudo apt-get install -fy
 ```
 
 On **Windows**, run the script from **WSL Ubuntu**, not PowerShell.
+
+**Note:** Ubuntu’s `live-build` generates invalid Bookworm security lines  
+(`security.debian.org bookworm/updates`). Always use Debian’s package in CI/local.
 
 ## Local build
 
