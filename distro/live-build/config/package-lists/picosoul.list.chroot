@@ -1,0 +1,44 @@
+# PicoSoul — keep lean (target ISO ~600–800MB)
+
+# live / base
+live-boot
+live-config
+sudo
+locales
+ca-certificates
+curl
+rsync
+
+# desktop
+xorg
+xserver-xorg-video-all
+xserver-xorg-input-all
+icewm
+pcmanfm
+xterm
+dbus-x11
+fonts-liberation
+xdg-utils
+
+# network / bt / audio
+network-manager
+network-manager-gnome
+bluez
+blueman
+pipewire
+wireplumber
+pipewire-audio
+
+# firmware (Bookworm non-free-firmware)
+firmware-linux-free
+firmware-misc-nonfree
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+
+# agent runtime
+python3
+python3-venv
+python3-pip
+xz-utils
+tar
