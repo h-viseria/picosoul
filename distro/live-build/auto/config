@@ -29,7 +29,8 @@ lb config noauto \
   --iso-volume "PICOSOUL" \
   --memtest none \
   --win32-loader false \
-  --apt-indices false \
+  --apt-indices true \
+  --apt-source-archives false \
   --apt-recommends false \
   --firmware-binary false \
   --firmware-chroot false \
