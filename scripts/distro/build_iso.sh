@@ -97,7 +97,9 @@ if [[ -f "$ROOT/requirements-voice.txt" ]]; then
   cp "$ROOT/requirements-voice.txt" "$STAGE/" || true
 fi
 
-# Make hooks executable
+# Strip CRLF (Windows sync) and make hooks executable
+find "$WORK" -type f \( -name 'config' -o -name '*.hook.*' -o -name '*.sh' \) \
+  -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 find "$WORK/config/hooks" -type f -name '*.hook.*' -exec chmod +x {} \; 2>/dev/null || true
 chmod +x "$WORK/auto/config" 2>/dev/null || true
 
@@ -114,13 +116,45 @@ fi
 log "running live-build (this takes a while)…"
 cd "$WORK"
 
-# Point lb cache at out/cache
+# Point lb cache at out/cache (sudo -E preserves this)
 export LB_CACHE="$CACHE"
 mkdir -p "$CACHE"
 
-"${SUDO[@]}" lb clean --purge || true
-"${SUDO[@]}" lb config
-"${SUDO[@]}" lb build
+# Prefer sudo -E so LB_CACHE survives
+if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
+  LB=(sudo -E lb)
+else
+  LB=(lb)
+fi
+
+"${LB[@]}" clean --purge || true
+"${LB[@]}" config
+set +e
+"${LB[@]}" build
+LB_RC=$?
+set -e
+
+if [[ "$LB_RC" -ne 0 ]]; then
+  log "ERROR: lb build failed (exit $LB_RC). Recent log tails:"
+  find "$WORK" -type f \( -name '*.log' -o -name 'build.log' \) 2>/dev/null \
+    | head -20 \
+    | while read -r lf; do
+        echo "----- $lf -----"
+        tail -n 80 "$lf" || true
+      done
+  # Also dump apt history if present
+  for lf in \
+    "$WORK/chroot/var/log/apt/term.log" \
+    "$WORK/chroot/var/log/bootstrap.log" \
+    "$WORK/build.log"
+  do
+    if [[ -f "$lf" ]]; then
+      echo "----- $lf -----"
+      tail -n 100 "$lf" || true
+    fi
+  done
+  exit "$LB_RC"
+fi
 
 # live-build names the hybrid image live-image-amd64.hybrid.iso (typical)
 BUILT=""
