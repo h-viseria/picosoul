@@ -1,0 +1,53 @@
+# === Generated / local only (never commit) ===
+out/iso/
+out/work/
+out/cache/
+out/**
+!out/README.md
+
+external/*
+!external/.gitkeep
+release/*
+!release/.gitkeep
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.spec
+external/pyinstaller/
+external/venv/
+external/venv-linux/
+external/cache/
+external/llama.cpp/
+
+# Local secrets / overlays / learned inventory
+config/config.local.toml
+config/inventory.json
+config/learned_intents.json
+data/
+inventory.json
+.env
+.env.*
+
+# Models (large) — download to USB persistence / models/
+*.gguf
+models/
+models/**
+!models/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# live-build residue if run from distro/ by mistake
+distro/live-build/cache/
+distro/live-build/chroot/
+distro/live-build/binary/
+distro/live-build/*.iso
